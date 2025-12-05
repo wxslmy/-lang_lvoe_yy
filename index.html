@@ -1,17 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Minimal PWA</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="/styles.css">
-  <meta name="theme-color" content="#0b7285">
-  <meta name="description" content="最小 PWA 示例 - 离线可用的静态小应用">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#007285">
+  <meta name="description" content="最小 PWA 示例 - 装修平台网">
+  <title>装修平台网</title>
+  <style>
+    /* 简单的基础样式，让页面更好看 */
+    body {
+      font-family: 微软雅黑, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .app {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    section {
+      margin: 30px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 8px 16px;
+      background: #007285;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    input, textarea {
+      margin: 8px 0;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .showcase-preview img {
+      max-width: 200px;
+      margin: 10px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
   <div class="app">
     <h1>装修平台网</h1>
+
     <!-- 1. 装修公司资质展示区 -->
     <section id="company-qualifications">
       <h2>装修公司资质</h2>
@@ -21,11 +62,14 @@
     <!-- 2. 公司实力与图片展示区 -->
     <section id="company-showcase">
       <h2>公司实力与案例图片</h2>
+      <div class="showcase-desc">（示例：图片轮播、工程案例、团队介绍）</div>
+      
       <form id="showcase-upload">
         <input type="file" id="showcase-files" accept="image/*" multiple>
         <button type="submit">上传图片</button>
       </form>
-      <div class="showcase-list" id="showcase-list">（上传后图片将在此预览）</div>
+      
+      <div class="showcase-preview" id="showcase-list">（上传后图片将在此预览）</div>
     </section>
 
     <!-- 3. 客户留言与户型上传区 -->
@@ -33,91 +77,44 @@
       <h2>客户留言与户型上传</h2>
       <form id="message-form">
         <input type="text" placeholder="您的姓名" required>
-        <input type="text" placeholder="联系方式" required>
+        <input type="tel" placeholder="联系方式" required>
         <textarea placeholder="留言内容" required></textarea>
-        <input type="file" accept="image/*" multiple>
-        <button type="submit">提交</button>
       </form>
     </section>
-
-    <!-- 4. 洽谈区 -->
-    <section id="negotiation-area">
-      <h2>客户与装修公司洽谈区</h2>
-      <div class="chat-box">（示例：在线沟通、预约洽谈）</div>
-    </section>
-
-    <!-- 5. 下户量房与报价区 -->
-    <section id="quote-area">
-      <h2>量房与报价</h2>
-      <div class="quote-box">（示例：量房结果、报价单、确认按钮）</div>
-    </section>
-
-    <!-- 6. 网签合同区 -->
-    <section id="contract-area">
-      <h2>平台网签合同</h2>
-      <div class="contract-box">（示例：合同内容、电子签名）</div>
-    </section>
-
-    <!-- 7. 第三方资金监管区 -->
-    <section id="fund-supervision">
-      <h2>第三方资金监管</h2>
-      <div class="fund-box">（示例：监管流程、资金状态）</div>
-    </section>
-
-    <!-- 8. 法律合规区 -->
-    <section id="legal-area">
-      <h2>法律合规</h2>
-      <div class="legal-box">（示例：合规说明、法律咨询入口）</div>
-    </section>
-
-    <!-- 9. 验房与异议交涉区 -->
-    <section id="inspection-area">
-      <h2>验房与异议交涉</h2>
-      <div class="inspection-box">（示例：验收流程、异议提交）</div>
-    </section>
-
-    <!-- 10. 法律与隐私协议区 -->
-    <section id="privacy-area">
-      <h2>法律与隐私协议</h2>
-      <div class="privacy-box">（示例：协议内容、用户确认）</div>
-    </section>
-
-    <!-- 11. 防恶意攻击区 -->
-    <section id="security-area">
-      <h2>安全与防护</h2>
-      <div class="security-box">（示例：验证码、风控提示、防刷机制）</div>
-    </section>
-
-    <p id="status">Service Worker: 未注册</p>
-    <button id="update">手动更新缓存</button>
   </div>
-  <script src="/app.js"></script>
+
   <script>
-    // 公司实力图片上传与预览
-    const showcaseForm = document.getElementById('showcase-upload');
-    const showcaseFiles = document.getElementById('showcase-files');
-    const showcaseList = document.getElementById('showcase-list');
-    showcaseForm.addEventListener('submit', function(e) {
+    // 图片上传预览代码
+    const uploadForm = document.getElementById('showcase-upload');
+    const fileInput = document.getElementById('showcase-files');
+    const previewContainer = document.getElementById('showcase-list');
+
+    uploadForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      showcaseList.innerHTML = '';
-      const files = showcaseFiles.files;
-      if (!files.length) {
-        showcaseList.textContent = '请先选择图片';
+      previewImages();
+    });
+
+    function previewImages() {
+      const files = fileInput.files;
+      previewContainer.innerHTML = '';
+
+      if (files.length === 0) {
+        previewContainer.innerHTML = '<p>请选择要上传的图片</p >';
         return;
       }
-      Array.from(files).forEach(file => {
+
+      for (const file of files) {
         const reader = new FileReader();
-        reader.onload = function(ev) {
+        reader.onload = function(e) {
           const img = document.createElement('img');
-          img.src = ev.target.result;
-          img.style.maxWidth = '120px';
-          img.style.margin = '8px';
-          img.alt = file.name;
-          showcaseList.appendChild(img);
+          img.src = e.target.result;
+          img.style.maxWidth = '200px';
+          img.style.margin = '10px';
+          previewContainer.appendChild(img);
         };
         reader.readAsDataURL(file);
-      });
-    });
+      }
+    }
   </script>
 </body>
 </html>
