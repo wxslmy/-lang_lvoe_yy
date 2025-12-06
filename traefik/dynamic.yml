@@ -1,0 +1,12 @@
+http:
+  routers:
+    lang:
+      rule: "Host(`localhost`)"
+      service: lang-service
+      entryPoints:
+        - web
+  services:
+    lang-service:
+      loadBalancer:
+        servers:
+          - url: "http://site:80"

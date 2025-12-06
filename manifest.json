@@ -1,7 +1,7 @@
 {
   "name": "Minimal PWA 示例",
   "short_name": "MinimalPWA",
-  "start_url": "/",
+  "start_url": "/",//对应aimshenmei.cn/
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0b7285",

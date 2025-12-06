@@ -1,52 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#007285">
   <meta name="description" content="最小 PWA 示例 - 装修平台网">
   <title>装修平台网</title>
+  <link rel="manifest" href="/manifest.json">
   <style>
-    /* 简单的基础样式，让页面更好看 */
-    body {
-      font-family: 微软雅黑, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .app {
-      background: #f8f8f8;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    section {
-      margin: 30px 0;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    button {
-      padding: 8px 16px;
-      background: #007285;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    input, textarea {
-      margin: 8px 0;
-      padding: 8px;
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .showcase-preview img {
-      max-width: 200px;
-      margin: 10px;
-      border-radius: 4px;
-    }
+    body {font-family: 'Microsoft Yahei', Arial, sans-serif;max-width:1200px;margin:0 auto;padding:20px;background:#eef6f6}
+    .app{background:#fff;padding:20px;border-radius:8px}
+    section{margin:24px 0;padding:16px;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+    h1{margin:0 0 12px;color:#007285}
+    h2{margin:0 0 8px;font-size:1.1rem}
+    button{padding:8px 12px;background:#007285;color:#fff;border:0;border-radius:4px;cursor:pointer}
+    input,textarea{display:block;margin:8px 0;padding:8px;width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:4px}
+    .showcase-preview img{max-width:200px;margin:8px;border-radius:6px}
+    .flex-row{display:flex;gap:12px;align-items:center}
   </style>
 </head>
 <body>
@@ -63,12 +33,10 @@
     <section id="company-showcase">
       <h2>公司实力与案例图片</h2>
       <div class="showcase-desc">（示例：图片轮播、工程案例、团队介绍）</div>
-      
-      <form id="showcase-upload">
+      <form id="showcase-upload" class="flex-row">
         <input type="file" id="showcase-files" accept="image/*" multiple>
-        <button type="submit">上传图片</button>
+        <button type="submit">预览图片</button>
       </form>
-      
       <div class="showcase-preview" id="showcase-list">（上传后图片将在此预览）</div>
     </section>
 
@@ -76,45 +44,59 @@
     <section id="customer-message">
       <h2>客户留言与户型上传</h2>
       <form id="message-form">
-        <input type="text" placeholder="您的姓名" required>
-        <input type="tel" placeholder="联系方式" required>
-        <textarea placeholder="留言内容" required></textarea>
+        <input type="text" id="cust-name" placeholder="您的姓名" required>
+        <input type="tel" id="cust-phone" placeholder="联系方式" required>
+        <textarea id="cust-msg" placeholder="留言内容" required></textarea>
+        <label for="cust-files">上传户型或参考图片（可选）</label>
+        <input type="file" id="cust-files" accept="image/*" multiple>
+        <div class="flex-row">
+          <button id="msg-submit" type="button">提交留言</button>
+          <span id="msg-status" style="margin-left:8px;color:#666"></span>
+        </div>
       </form>
     </section>
+
+    <!-- 简单的 SW 状态与手动更新 -->
+    <section id="sw-area">
+      <h2>Service Worker</h2>
+      <p id="status">Service Worker: 未注册</p>
+      <button id="update">手动更新缓存</button>
+    </section>
+
   </div>
 
+  <script src="/app.js"></script>
   <script>
-    // 图片上传预览代码
-    const uploadForm = document.getElementById('showcase-upload');
-    const fileInput = document.getElementById('showcase-files');
-    const previewContainer = document.getElementById('showcase-list');
+    // 图片上传预览（公司案例）
+    const showcaseForm = document.getElementById('showcase-upload');
+    const showcaseFiles = document.getElementById('showcase-files');
+    const showcaseList = document.getElementById('showcase-list');
 
-    uploadForm.addEventListener('submit', function(e) {
+    showcaseForm.addEventListener('submit', function(e){
       e.preventDefault();
-      previewImages();
+      showcaseList.innerHTML = '';
+      const files = showcaseFiles.files;
+      if (!files.length) { showcaseList.textContent = '请选择图片后点击预览'; return }
+      Array.from(files).forEach(file => {
+        const r = new FileReader();
+        r.onload = evt => {
+          const img = document.createElement('img'); img.src = evt.target.result; img.alt = file.name; showcaseList.appendChild(img);
+        };
+        r.readAsDataURL(file);
+      });
     });
 
-    function previewImages() {
-      const files = fileInput.files;
-      previewContainer.innerHTML = '';
-
-      if (files.length === 0) {
-        previewContainer.innerHTML = '<p>请选择要上传的图片</p >';
-        return;
-      }
-
-      for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.style.maxWidth = '200px';
-          img.style.margin = '10px';
-          previewContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+    // 客户留言（本示例仅在前端展示，真实场景应上传到后端并做验证）
+    const msgBtn = document.getElementById('msg-submit');
+    const msgStatus = document.getElementById('msg-status');
+    msgBtn.addEventListener('click', () => {
+      const name = document.getElementById('cust-name').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const msg = document.getElementById('cust-msg').value.trim();
+      if (!name || !phone || !msg) { msgStatus.textContent = '请完整填写姓名/联系方式/留言'; return }
+      msgStatus.textContent = '留言已本地保存（示例）';
+      setTimeout(()=> msgStatus.textContent = '', 3000);
+    });
   </script>
 </body>
 </html>
