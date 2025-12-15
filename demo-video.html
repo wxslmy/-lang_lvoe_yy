@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>演示录制 - 装修平台网 Demo</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f0fbfb;padding:24px}
+    .card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);max-width:900px;margin:12px auto}
+    h1{color:#007285;margin:0 0 12px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    img{max-width:160px;border-radius:6px;margin:6px}
+    .log{height:48px;line-height:48px;color:#666}
+    button{background:#007285;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>装修平台网 — 小演示</h1>
+    <p class="log" id="status">演示将在 2 秒后开始……</p>
+
+    <div class="row">
+      <div class="col">
+        <h3>案例图片（自动上传并预览）</h3>
+        <div id="preview"></div>
+      </div>
+      <div class="col">
+        <h3>客户留言</h3>
+        <div>
+          <input id="name" placeholder="姓名" style="width:100%;padding:8px;margin-bottom:8px">
+          <input id="phone" placeholder="电话" style="width:100%;padding:8px;margin-bottom:8px">
+          <textarea id="msg" placeholder="留言" style="width:100%;height:80px;padding:8px"></textarea>
+          <div style="margin-top:8px"><button id="submit">提交留言</button></div>
+        </div>
+        <p id="msg-status" style="color:#666;margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟图片文件（使用 tiny data URLs）
+    const sampleImgs = [
+      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="100%" height="100%" fill="%23007285"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle" dominant-baseline="middle">案例1</text></svg>',
+      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="100%" height="100%" fill="%23ff6b6b"/><text x="50%" y="50%" fill="white" font-size="28" text-anchor="middle" dominant-baseline="middle">案例2</text></svg>',
+      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="100%" height="100%" fill="%23ffd43b"/><text x="50%" y="50%" fill="black" font-size="28" text-anchor="middle" dominant-baseline="middle">案例3</text></svg>'
+    ];
+
+    const statusEl = document.getElementById('status');
+    const preview = document.getElementById('preview');
+    const submitBtn = document.getElementById('submit');
+    const nameEl = document.getElementById('name');
+    const phoneEl = document.getElementById('phone');
+    const msgEl = document.getElementById('msg');
+    const msgStatus = document.getElementById('msg-status');
+
+    function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+    async function runDemo(){
+      statusEl.textContent = '开始：上传图片并预览';
+      await sleep(800);
+      preview.innerHTML = '';
+      for (let i=0;i<sampleImgs.length;i++){
+        const img = document.createElement('img'); img.src=sampleImgs[i]; img.alt='案例'+(i+1);
+        preview.appendChild(img);
+        await sleep(700);
+      }
+
+      statusEl.textContent = '填写留言表单';
+      await sleep(600);
+      nameEl.value='张三'; phoneEl.value='13800000000'; msgEl.value='你好，我想咨询这套方案的预算。';
+      await sleep(800);
+      statusEl.textContent = '提交留言';
+      submitBtn.click();
+      await sleep(600);
+      statusEl.textContent = '演示完成 — 可用 FFmpeg 录制此页面生成 MP4 或 GIF';
+    }
+
+    submitBtn.addEventListener('click', ()=>{
+      msgStatus.textContent = '留言已提交（示例）';
+    });
+
+    // 等待页面加载，启动演示
+    setTimeout(runDemo,2000);
+  </script>
+</body>
+</html>
